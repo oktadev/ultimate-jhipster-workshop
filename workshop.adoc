@@ -3,7 +3,7 @@
 
 This is a cheat sheet for Matt Raible and Dennis Sharpe's Ultimate JHipster Workshop. This guide contains the bare minimum steps you'll need to build the labs.
 
-This workshop is based on the following existing tutorials:
+This workshop is based on the following tutorials:
 
 1. https://github.com/mraible/jhipster6-demo[Get Started with JHipster 6]
 2. https://developer.okta.com/blog/2019/05/23/java-microservices-spring-cloud-config[Java Microservices with Spring Cloud Config and JHipster]
