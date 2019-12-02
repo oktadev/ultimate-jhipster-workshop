@@ -1,0 +1,399 @@
+= The Ultimate JHipster Workshop at The Progressive Web Experience
+:toc:
+
+This is a cheat sheet for Matt Raible and Dennis Sharpe's Ultimate JHipster Workshop. This guide contains the bare minimum steps you'll need to build the labs.
+
+This workshop is based on the following existing tutorials:
+
+1. https://github.com/mraible/jhipster6-demo[Get Started with JHipster 6]
+2. https://developer.okta.com/blog/2019/05/23/java-microservices-spring-cloud-config[Java Microservices with Spring Cloud Config and JHipster]
+
+Both tutorials have screencasts you can watch to see all the code created in this workshop.
+
+== Agenda
+
+* **9:00** Talk: Spring Boot APIs and Angular Apps: Get Hip with JHipster!
+* **9:45** Lab: Build a PWA with Spring Boot and Angular
+* **17:00** Talk: Microservices with JHipster
+* **17:45** Lab: Build a Microservices Archicture with Spring Boot and Spring Cloud
+
+NOTE: The brackets at the end of each step indicate the alias's or IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
+
+== Configure Your Environment
+
+You'll need to install a few prerequisites to complete the labs in this workshop:
+
+* https://nodejs.org[Node 11]
+* https://adoptopenjdk.com[Java 11] (hint: use https://sdkman.io/[SDKMAN!])
+* Chrome
+* Docker
+* Eclipse or IDEA
+
+== Lab 1: Create an Angular PWA
+
+Follow the steps below or read https://github.com/mraible/jhipster6-demo[Get Started with JHipster 6] for a more thorough tutorial.
+
+=== Create JHipster Project
+
+. Create a `blog` directory and create a JHipster app in it with `jhipster`
+
+  name: blog
+  package: org.jhipster.blog
+  authenticationType: JWT
+  prodDatabaseType: PostgreSQL
+  languages: en,es
+  testFrameworks: Protractor
+
+. Start app using `./mvnw` and browse through it at <http://localhost:8080>
+
+. Confirm everything works by running Protractor (`./mvnw` in one terminal, `npm run e2e` in another)
+
+=== Generate Entities
+
+. Save Blog JDL from https://github.com/jhipster/jdl-samples/blob/master/blog.jh[jdl-samples] to your hard drive and import it
+
+  jhipster import-jdl blog.jdl
+
+. Restart your application and confirm entity screens work
+
+. Optional: turn off faker in `application-dev.yml` and run `./mvnw clean`
+
+. Create a couple of blogs and entries for `admin` and `user`
+
+See how `admin` and `user` share data? Let's fix that!
+
+=== Add Business Logic
+
+. Edit `BlogResource.java` and change `getAllBlogs()` method to:
+
+  return blogRepository.findByUserIsCurrentUser()
+
+. Confirm the blog list screen limits data to current user
+
+. Edit `EntryResource.java` and change `getAllEntries()` [`jh-findBy`]
+
+  page = entryRepository.findByBlogUserLoginOrderByDateDesc(SecurityUtils.getCurrentUserLogin().orElse(null), pageable);
+
+. Using your IDE, create a `findByBlogUserLoginOrderByDateDesc()` method in `EntryRepository`
+
+. Recompile both classes and verify entries are limited to the current user
+
+=== Make UI Enhancements
+
+If you enter HTML in the `content` field of a blog entry, you'll notice it's escaped on the list screen.
+
+To allow HTML, open `src/main/webapp/app/entities/entry/entry.component.html` and change the following line:
+
+  <td>{{entry.content}}</td>
+
+To:
+
+  <td [innerHTML]="entry.content"></td>
+
+Next, import the entry list's layout to look more like a blog [`jh-entries`]
+
+.`src/main/webapp/app/entities/entry/entry.component.html`
+[%collapsible]
+====
+[source,html]
+----
+<div class="table-responsive" *ngIf="entries?.length > 0">
+    <div infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
+        <div *ngFor="let entry of entries; trackBy: trackId">
+            <a [routerLink]="['/entry', entry.id, 'view' ]">
+                <h2>{{entry.title}}</h2>
+            </a>
+            <small>Posted on {{entry.date | date: 'short'}} by {{entry.blog.user.firstName}}</small>
+            <div [innerHTML]="entry.content"></div>
+            <div class="btn-group mb-2 mt-1">
+                <button type="submit"
+                        [routerLink]="['/entry', entry.id, 'edit']"
+                        class="btn btn-primary btn-sm">
+                    <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                </button>
+                <button type="submit"
+                        [routerLink]="['/', 'entry', { outlets: { popup: entry.id + '/delete'} }]"
+                        replaceUrl="true"
+                        queryParamsHandling="merge"
+                        class="btn btn-danger btn-sm">
+                    <fa-icon [icon]="'times'"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+----
+====
+
+=== Lock it down!
+
+If you try creating blogs and navigating to them by ID (in your brower's address bar), you'll be able to see them.
+
+Add logic to `BlogResource#getBlog()` to make sure the current user owns the blog [`jh-get`].
+
+[source,java]
+----
+if (blog.isPresent() && blog.get().getUser() != null &&
+    !blog.get().getUser().getLogin().equals(SecurityUtils.getCurrentUserLogin().orElse(""))) {
+    return new ResponseEntity<>("error.http.403", HttpStatus.FORBIDDEN);
+}
+----
+
+Restart your app and confirm this security hole is fixed.
+
+=== Make Your JHipster App into a PWA
+
+To be a PWA requires three features:
+
+. Your app must be served over HTTPS
+. Your app must register a service worker so it can cache requests and work offline
+. Your app must have a webapp manifest with installation information and icons
+
+To force HTTPS in production, open `src/main/java/org/jhipster/blog/config/SecurityConfiguration.java` and add a rule to force a secure channel when an `X-Forwarded-Proto` header is sent. This header will be sent on cloud providers like Cloud Foundry and Heroku.
+
+[source,java]
+----
+@Override
+protected void configure(HttpSecurity http) throws Exception {
+    http
+        ...
+    .and()
+        .headers()
+        .frameOptions()
+        .disable()
+    .and()
+        .requiresChannel()
+        .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
+        .requiresSecure()
+    .and()
+        .authorizeRequests()
+        ...
+}
+----
+
+The https://developers.google.com/web/tools/workbox/modules/workbox-webpack-plugin[workbox-webpack-plugin] is configured already for generating a service worker, but it only works when running your app with a production profile. This is nice because it means your data isn't cached in the browser when you're developing.
+
+To register a service worker, open `src/main/webapp/index.html` and uncomment the following block of code.
+
+[source,html]
+----
+<script>
+    if ('serviceWorker' in navigator) {
+         navigator.serviceWorker
+            .register('./service-worker.js')
+            .then(function() { console.log('Service Worker Registered'); });
+    }
+</script>
+----
+
+The final feature — a webapp manifest — is included at `src/main/webapp/manifest.webapp`. It defines an app name, colors, and icons. You might want to adjust these for your app.
+
+Run `./mvnw -Pprod,tls`, open `<https://localhost:8443>`, and test your app with Lighthouse (Developer Tools > Audits in Chrome).
+
+=== Deploy to the Cloud
+
+. Build for production
+
+  ./mvnw -Pprod verify
+
+. Fix test failures by adding `@WithMockUser` to test methods and by setting a `User` on a blog by default in `BlogResourceIT.java`
+
+  @Autowired
+  private UserRepository userRepository;
+
+  public Blog createEntity(EntityManager em) {
+      Blog blog = new Blog()
+              .name(DEFAULT_NAME)
+              .handle(DEFAULT_HANDLE)
+              .user(userRepository.findOneByLogin("user").get());
+      return blog;
+  }
+
+. Run `./mvnw -Pprod verify` again
+
+. Login to Heroku using `heroku login`
+
+. Run `jhipster heroku`
+
+. When process completes, run `heroku open`
+
+. Test your production app with Lighthouse
+
+. Fini!
+
+The completed code for this section can be found [on GitHub](https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-pwa).
+
+== Part II: Build a React UI with Streaming Data
+
+Follow the steps below or read https://developer.okta.com/blog/2019/05/23/java-microservices-spring-cloud-config[Java Microservices with Spring Cloud Config and JHipster] for a more thorough tutorial.
+
+=== Create Microservices with JHipster
+
+. Use https://start.jhipster.tech[JDL Studio] to create a microservices architecture using JDL (gateway, blog, and store)
+
+.`apps.jh`
+[%collapsible]
+====
+[source]
+----
+application {
+  config {
+    baseName gateway,
+    packageName com.okta.developer.gateway,
+    applicationType gateway,
+    authenticationType oauth2,
+    prodDatabaseType postgresql,
+    serviceDiscoveryType eureka,
+    testFrameworks [protractor]
+  }
+  entities Blog, Post, Tag, Product
+}
+
+application {
+  config {
+    baseName blog,
+    packageName com.okta.developer.blog,
+    applicationType microservice,
+    authenticationType oauth2,
+    prodDatabaseType postgresql,
+    serverPort 8081,
+    serviceDiscoveryType eureka
+  }
+  entities Blog, Post, Tag
+}
+
+application {
+  config {
+    baseName store,
+    packageName com.okta.developer.store,
+    applicationType microservice,
+    authenticationType oauth2,
+    databaseType mongodb,
+    devDatabaseType mongodb,
+    prodDatabaseType mongodb,
+    enableHibernateCache false,
+    serverPort 8082,
+    serviceDiscoveryType eureka
+  }
+  entities Product
+}
+
+entity Blog {
+  name String required minlength(3),
+  handle String required minlength(2)
+}
+
+entity Post {
+  title String required,
+  content TextBlob required,
+  date Instant required
+}
+
+entity Tag {
+  name String required minlength(2)
+}
+
+entity Product {
+  title String required,
+  price BigDecimal required min(0),
+  image ImageBlob
+}
+
+relationship ManyToOne {
+  Blog{user(login)} to User,
+  Post{blog(name)} to Blog
+}
+
+relationship ManyToMany {
+  Post{tag(name)} to Tag{post}
+}
+
+paginate Post, Tag with infinite-scroll
+paginate Product with pagination
+
+microservice Product with store
+microservice Blog, Post, Tag with blog
+
+// will be created under 'docker-compose' folder
+deployment {
+  deploymentType docker-compose
+  appsFolders [gateway, blog, store]
+  dockerRepositoryName "jmicro"
+  consoleOptions [zipkin]
+}
+----
+====
+[start=2]
+. Save the file to your hard drive and run `jhipster import-jdl apps.jh`
+
+. Create an aggregator `pom.xml` in the root directory
+
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <modelVersion>4.0.0</modelVersion>
+      <groupId>com.okta.developer</groupId>
+      <artifactId>jhipster-parent</artifactId>
+      <version>1.0.0-SNAPSHOT</version>
+      <packaging>pom</packaging>
+      <name>jhipster-parent</name>
+      <modules>
+          <module>gateway</module>
+          <module>blog</module>
+          <module>store</module>
+      </modules>
+  </project>
+
+. Create Docker images for your Spring Boot apps
+
+  mvn -Pprod verify com.google.cloud.tools:jib-maven-plugin:dockerBuild
+
+. Run everything with Docker Compose
+
+  cd docker-compose
+  docker-compose up -d
+
+. Add a `hosts` entry for Keycloak
+
+  127.0.0.1  keycloak
+
+. Show JHipster Registry at `http://localhost:8761` and gateway at `http://localhost:8080`
+
+=== Configure JHipster Microservices to use Okta for Identity
+
+. Create an https://developer.okta.com/signup[Okta Developer Account] if you don't already have one
+
+. Create a web app on Okta, use `http://localhost:8080/login/oauth2/code/oidc` for redirect URI
+
+. Edit your app and add `http://localhost:8080` as a logout redirect URI
+
+. Add your Okta settings in Spring Cloud Config's `docker-compose/central-server-config/application.yml`
+
+  spring:
+    security:
+      oauth2:
+        client:
+          provider:
+            oidc:
+              issuer-uri: https://{yourOktaDomain}/oauth2/default
+          registration:
+            oidc:
+              client-id: {yourClientId}
+              client-secret: {yourClientSecret}
+
+. Restart all containers using `docker-compose restart`
+
+. Prepare Okta for JHipster: `ROLE_ADMIN` group, groups in ID token, and JHipster Registry's redirect URIs
+
+. Demo JHipster Registry and gateway log in with Okta
+
+. Finito! 🤓
+
+The completed code for this section can be found [on GitHub](https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-microservices).
+
+== Questions or Comments?
+
+Please send a message to https://twitter.com/mraible[@mraible] or https://twitter.com/sharpedennis[@SharpeDennis] on Twitter.
+
