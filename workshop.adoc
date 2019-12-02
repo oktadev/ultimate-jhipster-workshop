@@ -225,7 +225,7 @@ Run `./mvnw -Pprod,tls`, open `<https://localhost:8443>`, and test your app with
 
 . Fini!
 
-The completed code for this section can be found [on GitHub](https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-pwa).
+The completed code for this section can be found https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-pwa[on GitHub].
 
 == Lab 2: Build a Microservices Archicture with Spring Boot and Spring Cloud
 
@@ -393,7 +393,7 @@ deployment {
 
 . Finito! 🤓
 
-The completed code for this section can be found [on GitHub](https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-microservices).
+The completed code for this section can be found https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-microservices[on GitHub].
 
 == Questions or Comments?
 
