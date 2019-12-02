@@ -13,9 +13,9 @@ Both tutorials have screencasts you can watch to see all the code created in thi
 == Agenda
 
 * **9:00** Talk: Spring Boot APIs and Angular Apps: Get Hip with JHipster!
-* **9:45** Lab: Build a PWA with Spring Boot and Angular
+* **9:45** Lab 1: Build a PWA with Spring Boot and Angular
 * **17:00** Talk: Microservices with JHipster
-* **17:45** Lab: Build a Microservices Archicture with Spring Boot and Spring Cloud
+* **17:45** Lab 2: Build a Microservices Archicture with Spring Boot and Spring Cloud
 
 NOTE: The brackets at the end of each step indicate the alias's or IntelliJ Live Templates to use. You can find the template definitions at https://github.com/mraible/idea-live-templates[mraible/idea-live-templates].
 
@@ -225,7 +225,7 @@ Run `./mvnw -Pprod,tls`, open `<https://localhost:8443>`, and test your app with
 
 The completed code for this section can be found [on GitHub](https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-pwa).
 
-== Part II: Build a React UI with Streaming Data
+== Lab 2: Build a Microservices Archicture with Spring Boot and Spring Cloud
 
 Follow the steps below or read https://developer.okta.com/blog/2019/05/23/java-microservices-spring-cloud-config[Java Microservices with Spring Cloud Config and JHipster] for a more thorough tutorial.
 
