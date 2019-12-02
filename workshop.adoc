@@ -1,5 +1,5 @@
 = The Ultimate JHipster Workshop at The Progressive Web Experience
-:toc:
+:toc: macro
 
 This is a cheat sheet for Matt Raible and Dennis Sharpe's Ultimate JHipster Workshop. This guide contains the bare minimum steps you'll need to build the labs.
 
@@ -9,6 +9,8 @@ This workshop is based on the following existing tutorials:
 2. https://developer.okta.com/blog/2019/05/23/java-microservices-spring-cloud-config[Java Microservices with Spring Cloud Config and JHipster]
 
 Both tutorials have screencasts you can watch to see all the code created in this workshop.
+
+toc::[]
 
 == Agenda
 
