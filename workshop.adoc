@@ -30,6 +30,7 @@ You'll need to install a few prerequisites to complete the labs in this workshop
 * Chrome
 * Docker
 * Eclipse or IDEA
+* Git
 
 == Lab 1: Create an Angular PWA
 
