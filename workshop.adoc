@@ -233,7 +233,7 @@ Follow the steps below or read https://developer.okta.com/blog/2019/05/23/java-m
 
 === Create Microservices with JHipster
 
-. Use https://start.jhipster.tech[JDL Studio] to create a microservices architecture using JDL (gateway, blog, and store)
+. Save this file to your hard drive
 
 .`apps.jh`
 [%collapsible]
@@ -328,7 +328,7 @@ deployment {
 ----
 ====
 [start=2]
-. Save the file to your hard drive and run `jhipster import-jdl apps.jh`
+. Run `jhipster import-jdl apps.jh`
 
 . Create an aggregator `pom.xml` in the root directory
 
