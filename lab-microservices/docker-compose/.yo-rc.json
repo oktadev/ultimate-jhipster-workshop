@@ -1,0 +1,19 @@
+{
+  "generator-jhipster": {
+    "deploymentType": "docker-compose",
+    "gatewayType": "zuul",
+    "monitoring": "no",
+    "directoryPath": "../",
+    "appsFolders": [
+      "gateway",
+      "blog",
+      "store"
+    ],
+    "clusteredDbApps": [],
+    "consoleOptions": [],
+    "serviceDiscoveryType": "eureka",
+    "dockerRepositoryName": "jmicro",
+    "dockerPushCommand": "docker push",
+    "jwtSecretKey": "YTU3NjA5MzUwNTExMDBkOWM5ZTRmNDllNjg5MGY5ZDI0YmVlMDc5NzdjZjQzZjA2MzllZGUwMjJjYjg4ZDlkMDQ4MDI3N2Y4MTk1ZmIxYjJkZWQyOTM2NmUyYWU5NTdhZjRkNg=="
+  }
+}
