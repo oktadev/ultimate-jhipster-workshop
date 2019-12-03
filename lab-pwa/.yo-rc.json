@@ -38,7 +38,7 @@
     "nativeLanguage": "en",
     "languages": ["en", "es"],
     "blueprints": [],
-    "herokuAppName": "blog-pwx",
+    "herokuAppName": "vast-harbor-47055",
     "herokuDeployType": "git"
   }
 }
