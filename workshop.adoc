@@ -202,15 +202,14 @@ protected void configure(HttpSecurity http) throws Exception {
     http
         ...
     .and()
-        .headers()
         .frameOptions()
-        .disable()
+        .deny()
     .and()
         .requiresChannel()
         .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
         .requiresSecure()
     .and()
-        .authorizeRequests()
+        .sessionManagement()
         ...
 }
 ----
@@ -232,9 +231,15 @@ To register a service worker, open `src/main/webapp/index.html` and uncomment th
 
 The final feature — a webapp manifest — is included at `src/main/webapp/manifest.webapp`. It defines an app name, colors, and icons. You might want to adjust these for your app.
 
-Run `./mvnw -Pprod,tls`, open `<https://localhost:8443>`, and test your app with Lighthouse (Developer Tools > Audits in Chrome).
+Start PostgreSQL with Docker, so you can run the `prod` profile.
+
+  docker-compose -f src/main/docker/postgresql
+
+Run `./mvnw -Pprod`, open `<http://localhost:8080>`, and test your app with Lighthouse (Chrome Developer Tools > Audits).
 
 === Deploy to the Cloud
+
+IMPORTANT: Before deploying your PWA to production, you'll need to https://stackoverflow.com/questions/57979835/how-to-fix-uncaught-in-promise-bad-precaching-response-error-with-service-wo/57982417#57982417[fix a problem caused by Swagger UI].
 
 . Build for production
 
@@ -253,7 +258,7 @@ Run `./mvnw -Pprod,tls`, open `<https://localhost:8443>`, and test your app with
       return blog;
   }
 
-. Run `./mvnw -Pprod verify` again
+. Run `./mvnw test` to verify tests are fixed
 
 . Login to Heroku using `heroku login`
 
