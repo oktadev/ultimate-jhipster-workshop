@@ -233,7 +233,7 @@ Follow the steps below or read https://developer.okta.com/blog/2019/05/23/java-m
 
 === Create Microservices with JHipster
 
-. Save this file to your hard drive
+. Make a new directory and save this file to your hard drive in that directory
 
 .`apps.jh`
 [%collapsible]
