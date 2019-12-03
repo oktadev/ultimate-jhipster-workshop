@@ -439,7 +439,7 @@ deployment {
 
 . Finito! 🤓
 
-The completed code for this section can be found https://github.com/oktadeveloper/ultimate-jhipster-workshop/lab-microservices[on GitHub].
+The completed code for this section can be found https://github.com/oktadeveloper/ultimate-jhipster-workshop/tree/master/lab-microservices[on GitHub].
 
 == Questions or Comments?
 
