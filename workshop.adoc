@@ -35,7 +35,7 @@ You'll need to install a few prerequisites to complete the labs in this workshop
 
 Follow the steps below or read https://github.com/mraible/jhipster6-demo[Get Started with JHipster 6] for a more thorough tutorial.
 
-=== Create JHipster Project
+=== Create a JHipster Project
 
 . Create a `blog` directory and create a JHipster app in it with `jhipster`
 
@@ -46,23 +46,61 @@ Follow the steps below or read https://github.com/mraible/jhipster6-demo[Get Sta
   languages: en,es
   testFrameworks: Protractor
 
-. Start app using `./mvnw` and browse through it at <http://localhost:8080>
+. Start app using `./mvnw` and browse it at <http://localhost:8080>
 
 . Confirm everything works by running Protractor (`./mvnw` in one terminal, `npm run e2e` in another)
 
 === Generate Entities
 
-. Save Blog JDL from https://github.com/jhipster/jdl-samples/blob/master/blog.jh[jdl-samples] to your hard drive and import it
+. Create a `blog.jdl` file with the code below
+
+.`blog.jdl`
+[%collapsible]
+====
+[source]
+----
+entity Blog {
+  name String required minlength(3),
+  handle String required minlength(2)
+}
+
+entity Entry {
+  title String required,
+  content TextBlob required,
+  date Instant required
+}
+
+entity Tag {
+  name String required minlength(2)
+}
+
+relationship ManyToOne {
+  Blog{user(login)} to User,
+  Entry{blog(name)} to Blog
+}
+
+relationship ManyToMany {
+  Entry{tag(name)} to Tag{entry}
+}
+
+paginate Entry, Tag with infinite-scroll
+----
+====
+[start=2]
+. Generate entities and CRUD screens by importing this file
 
   jhipster import-jdl blog.jdl
 
 . Restart your application and confirm entity screens work
 
-. Optional: turn off faker in `application-dev.yml` and run `./mvnw clean`
+. Optional: turn off faker in `src/main/resources/config/application-dev.yml` and run `rm -rf target/h2db` or `./mvnw clean`
+
+  liquibase:
+    contexts: dev
 
 . Create a couple of blogs and entries for `admin` and `user`
 
-See how `admin` and `user` share data? Let's fix that!
+Notice how `admin` and `user` share data? Let's fix that!
 
 === Add Business Logic
 
@@ -74,7 +112,7 @@ See how `admin` and `user` share data? Let's fix that!
 
 . Edit `EntryResource.java` and change `getAllEntries()` [`jh-findBy`]
 
-  page = entryRepository.findByBlogUserLoginOrderByDateDesc(SecurityUtils.getCurrentUserLogin().orElse(null), pageable);
+  Page<Entry> page = entryRepository.findByBlogUserLoginOrderByDateDesc(SecurityUtils.getCurrentUserLogin().orElse(null), pageable);
 
 . Using your IDE, create a `findByBlogUserLoginOrderByDateDesc()` method in `EntryRepository`
 
@@ -92,7 +130,9 @@ To:
 
   <td [innerHTML]="entry.content"></td>
 
-Next, import the entry list's layout to look more like a blog [`jh-entries`]
+Run `npm start` to see your changes without restarting Spring Boot.
+
+Next, import the entry list's layout to look more like a blog, replacing `<div class="table-responsive">` with the code below [`jh-entries`]
 
 .`src/main/webapp/app/entities/entry/entry.component.html`
 [%collapsible]
@@ -162,15 +202,14 @@ protected void configure(HttpSecurity http) throws Exception {
     http
         ...
     .and()
-        .headers()
         .frameOptions()
-        .disable()
+        .deny()
     .and()
         .requiresChannel()
         .requestMatchers(r -> r.getHeader("X-Forwarded-Proto") != null)
         .requiresSecure()
     .and()
-        .authorizeRequests()
+        .sessionManagement()
         ...
 }
 ----
@@ -192,9 +231,15 @@ To register a service worker, open `src/main/webapp/index.html` and uncomment th
 
 The final feature — a webapp manifest — is included at `src/main/webapp/manifest.webapp`. It defines an app name, colors, and icons. You might want to adjust these for your app.
 
-Run `./mvnw -Pprod,tls`, open `<https://localhost:8443>`, and test your app with Lighthouse (Developer Tools > Audits in Chrome).
+Start PostgreSQL with Docker, so you can run the `prod` profile.
+
+  docker-compose -f src/main/docker/postgresql
+
+Run `./mvnw -Pprod`, open `<http://localhost:8080>`, and test your app with Lighthouse (Chrome Developer Tools > Audits).
 
 === Deploy to the Cloud
+
+IMPORTANT: Before deploying your PWA to production, you'll need to https://stackoverflow.com/questions/57979835/how-to-fix-uncaught-in-promise-bad-precaching-response-error-with-service-wo/57982417#57982417[fix a problem caused by Swagger UI].
 
 . Build for production
 
@@ -213,7 +258,7 @@ Run `./mvnw -Pprod,tls`, open `<https://localhost:8443>`, and test your app with
       return blog;
   }
 
-. Run `./mvnw -Pprod verify` again
+. Run `./mvnw test` to verify tests are fixed
 
 . Login to Heroku using `heroku login`
 
